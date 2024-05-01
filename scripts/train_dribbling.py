@@ -6,6 +6,7 @@ def train_go1(headless=True):
 
     from dribblebot.envs.base.legged_robot_config import Cfg
     from dribblebot.envs.go1.go1_config import config_go1
+    from dribblebot.envs.cyberdog2.cyberdog2_config import config_cyberdog2
     from dribblebot.envs.go1.velocity_tracking import VelocityTrackingEasyEnv
 
     from dribblebot_learn.ppo_cse import Runner
@@ -14,15 +15,15 @@ def train_go1(headless=True):
     from dribblebot_learn.ppo_cse.ppo import PPO_Args
     from dribblebot_learn.ppo_cse import RunnerArgs
 
-    config_go1(Cfg)
+    config_cyberdog2(Cfg)
     Cfg.env.num_envs = 1000
 
-    RunnerArgs.resume = True
+    RunnerArgs.resume = False
     RunnerArgs.resume_path = "improbableailab/dribbling/j34kr9ds"
     RunnerArgs.resume_checkpoint = 'tmp/legged_data/ac_weights_last.pt' 
 
 
-    Cfg.robot.name = "go1"
+    Cfg.robot.name = "cyberdog2"
     Cfg.sensors.sensor_names = [
                         "ObjectSensor",
                         "OrientationSensor",
@@ -68,7 +69,7 @@ def train_go1(headless=True):
 
     Cfg.domain_rand.lag_timesteps = 6
     Cfg.domain_rand.randomize_lag_timesteps = True
-    Cfg.control.control_type = "actuator_net"
+    Cfg.control.control_type = "P"
 
     Cfg.domain_rand.randomize_rigids_after_start = False
     Cfg.domain_rand.randomize_friction_indep = False
@@ -98,7 +99,6 @@ def train_go1(headless=True):
 
     Cfg.env.num_observation_history = 15
     Cfg.reward_scales.feet_contact_forces = 0.0
-    Cfg.env.num_envs = 1000
 
     Cfg.commands.exclusive_phase_offset = False
     Cfg.commands.pacing_offset = False
@@ -267,7 +267,7 @@ def train_go1(headless=True):
     AC_Args.adaptation_labels = []
     AC_Args.adaptation_dims = []
 
-    RunnerArgs.save_video_interval = 500
+    RunnerArgs.save_video_interval = 100
 
     import wandb
     wandb.init(
@@ -285,7 +285,7 @@ def train_go1(headless=True):
 
     device = 'cuda:0'
     # device = 'cpu'
-    env = VelocityTrackingEasyEnv(sim_device=device, headless=False, cfg=Cfg)
+    env = VelocityTrackingEasyEnv(sim_device=device, headless=headless, cfg=Cfg)
 
     env = HistoryWrapper(env)
     runner = Runner(env, device=device)

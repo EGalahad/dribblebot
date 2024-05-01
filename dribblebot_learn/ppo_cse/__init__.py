@@ -6,7 +6,7 @@ import os
 import torch
 # from ml_logger import logger
 import wandb
-from wandb_osh.hooks import TriggerWandbSyncHook
+# from wandb_osh.hooks import TriggerWandbSyncHook
 
 from params_proto import PrefixProto
 
@@ -97,7 +97,7 @@ class Runner:
         self.env.reset()
 
     def learn(self, num_learning_iterations, init_at_random_ep_len=False, eval_freq=100, curriculum_dump_freq=500, eval_expert=False):
-        trigger_sync = TriggerWandbSyncHook()
+        # trigger_sync = TriggerWandbSyncHook()
         wandb.watch(self.alg.actor_critic, log="all", log_freq=RunnerArgs.log_freq)
 
         if init_at_random_ep_len:
@@ -185,7 +185,7 @@ class Runner:
             self.tot_timesteps += self.num_steps_per_env * self.env.num_envs
 
             wandb.log({"timesteps": self.tot_timesteps, "iterations": it}, step=it)
-            trigger_sync()
+            # trigger_sync()
 
             if it % RunnerArgs.save_interval == 0:
                     print(f"Saving model at iteration {it}")
@@ -203,19 +203,23 @@ class Runner:
 
                     adaptation_module_path = f'{path}/adaptation_module_{it}.jit'
                     adaptation_module = copy.deepcopy(self.alg.actor_critic.adaptation_module).to('cpu')
-                    traced_script_adaptation_module = torch.jit.script(adaptation_module)
-                    traced_script_adaptation_module.save(adaptation_module_path)
+                    # traced_script_adaptation_module = torch.jit.script(adaptation_module)
+                    # traced_script_adaptation_module.save(adaptation_module_path)
+                    torch.save(adaptation_module, adaptation_module_path)
 
                     adaptation_module_path = f'{path}/adaptation_module_latest.jit'
-                    traced_script_adaptation_module.save(adaptation_module_path)
+                    # traced_script_adaptation_module.save(adaptation_module_path)
+                    torch.save(adaptation_module, adaptation_module_path)
 
                     body_path = f'{path}/body_{it}.jit'
                     body_model = copy.deepcopy(self.alg.actor_critic.actor_body).to('cpu')
-                    traced_script_body_module = torch.jit.script(body_model)
-                    traced_script_body_module.save(body_path)
+                    # traced_script_body_module = torch.jit.script(body_model)
+                    # traced_script_body_module.save(body_path)
+                    torch.save(body_model, body_path)
 
                     body_path = f'{path}/body_latest.jit'
-                    traced_script_body_module.save(body_path)
+                    # traced_script_body_module.save(body_path)
+                    torch.save(body_model, body_path)
 
                     # logger.upload_file(file_path=adaptation_module_path, target_path=f"checkpoints/", once=False)
                     # logger.upload_file(file_path=body_path, target_path=f"checkpoints/", once=False)

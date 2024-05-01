@@ -549,7 +549,7 @@ class LeggedRobot(BaseTask):
         self.default_body_mass = props[0].mass
 
         props[0].mass = self.default_body_mass + self.payloads[env_id]
-        props[0].com = gymapi.Vec3(self.com_displacements[env_id, 0], self.com_displacements[env_id, 1],
+        props[0].com = props[0].com + gymapi.Vec3(self.com_displacements[env_id, 0], self.com_displacements[env_id, 1],
                                    self.com_displacements[env_id, 2])
         return props
 
@@ -1336,9 +1336,11 @@ class LeggedRobot(BaseTask):
 
         # create robot
         from dribblebot.robots.go1 import Go1
+        from dribblebot.robots.cyberdog2 import Cyberdog2
 
         robot_classes = {
             'go1': Go1,
+            "cyberdog2": Cyberdog2,
         }
 
         self.robot = robot_classes[self.cfg.robot.name](self)
