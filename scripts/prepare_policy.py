@@ -38,13 +38,15 @@ def load_and_save_policy(run_path, label):
     adaptation_module_path = os.path.join(path, f'adaptation_module.jit')
     adaptation_module_file = wandb.restore('tmp/legged_data/adaptation_module_latest.jit', run_path=run_path)
     # adaptation_module_file = run.file('tmp/legged_data/adaptation_module_68000.jit').download(replace=True, root='./tmp')
-    adaptation_module = torch.jit.load(adaptation_module_file.name, map_location="cpu")
+    # adaptation_module = torch.jit.load(adaptation_module_file.name, map_location="cpu")
+    adaptation_module = torch.load(adaptation_module_file.name, map_location="cpu")
     adaptation_module.save(adaptation_module_path)
 
     body_path = os.path.join(path, f'body.jit')
     body_file = wandb.restore('tmp/legged_data/body_latest.jit', run_path=run_path)
     # body_file = run.file('tmp/legged_data/body_68000.jit').download(replace=True, root='./tmp')
-    body = torch.jit.load(body_file.name, map_location="cpu")
+    # body = torch.jit.load(body_file.name, map_location="cpu")
+    body = torch.load(body_file.name, map_location="cpu")
     body.save(body_path)
 
     ac_weights_path = os.path.join(path, f'ac_weights.pt')

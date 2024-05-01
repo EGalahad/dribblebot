@@ -141,7 +141,8 @@ def train_actuator_network(xs, ys, actuator_network_path):
             print(
                 f'epoch: {epoch} | loss: {epoch_loss:.4f} | test loss: {test_loss:.4f} | mae: {mae:.4f}')
 
-        model_scripted = torch.jit.script(model)  # Export to TorchScript
+        # model_scripted = torch.jit.script(model)  # Export to TorchScript
+        model_scripted = model  # Export to TorchScript
         model_scripted.save(actuator_network_path)  # Save
     return model
 
@@ -206,7 +207,8 @@ def train_actuator_network_and_plot_predictions(log_dir_root, log_dir, actuator_
     ys = torch.cat(ys, dim=0)
 
     if load_pretrained_model:
-        model = torch.jit.load(actuator_network_path).to('cpu')
+        # model = torch.jit.load(actuator_network_path).to('cpu')
+        model = torch.load(actuator_network_path).to('cpu')
     else:
         model = train_actuator_network(xs, ys, actuator_network_path).to("cpu")
 
