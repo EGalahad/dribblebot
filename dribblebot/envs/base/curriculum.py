@@ -166,13 +166,14 @@ if __name__ == '__main__':
 
     low, high = np.array([-1.0, -0.6, -1.0]), np.array([1.0, 0.6, 1.0])
 
-    adjacents = r.get_local_bins(np.array([10, ]), range=0.5)
+    adjacents = r.get_local_bins(np.array([10, ]), ranges=0.5)
     for adjacent in adjacents:
         adjacent_inds = np.array(adjacent.nonzero()[0])
         print(adjacent_inds)
-        r.update(bin_inds=adjacent_inds, lin_vel_rewards=np.ones_like(adjacent_inds),
-                 ang_vel_rewards=np.ones_like(adjacent_inds), lin_vel_threshold=0.0, ang_vel_threshold=0.0,
-                 local_range=0.5)
+        r.update(bin_inds=adjacent_inds, task_rewards=[torch.ones(adjacent_inds.shape)], success_thresholds=[0.0], local_range=0.5)
+        # r.update(bin_inds=adjacent_inds, lin_vel_rewards=np.ones_like(adjacent_inds),
+        #          ang_vel_rewards=np.ones_like(adjacent_inds), lin_vel_threshold=0.0, ang_vel_threshold=0.0,
+        #          local_range=0.5)
 
     samples, bins = r.sample(10_000)
 

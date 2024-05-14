@@ -15,8 +15,10 @@ class Cfg(PrefixProto, cli=False):
         send_timeouts = True  # send time out information to the algorithm
         episode_length_s = 20  # episode length in seconds
         record_video = True
-        recording_width_px = 360
-        recording_height_px = 240
+        # recording_width_px = 360
+        # recording_height_px = 240
+        recording_width_px = 720
+        recording_height_px = 480
         recording_mode = "COLOR"
         num_recording_envs = 1
 
@@ -293,6 +295,12 @@ class Cfg(PrefixProto, cli=False):
         max_push_vel_xy = 1.
         randomize_lag_timesteps = True
         lag_timesteps = 6
+        
+        # randomize joint dynamics
+        joint_friction_range = [0.03, 0.08]
+        joint_damping_range = [0.02, 0.06]
+        
+        
 
     class rewards(PrefixProto, cli=False):
         only_positive_rewards = True  # if true negative total rewards are clipped at zero (avoids early termination problems)

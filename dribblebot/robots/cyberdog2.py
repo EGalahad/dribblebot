@@ -2,6 +2,7 @@ from .robot import Robot
 
 from dribblebot import MINI_GYM_ROOT_DIR
 import os
+import numpy as np
 
 from isaacgym import gymapi
 
@@ -32,10 +33,9 @@ class Cyberdog2(Robot):
         asset_options.thickness = asset_config.thickness
         asset_options.disable_gravity = asset_config.disable_gravity
 
-        asset_options.vhacd_enabled = False
-        # asset_options.vhacd_enabled = True
-        # asset_options.vhacd_params = gymapi.VhacdParams()
-        # asset_options.vhacd_params.resolution = 500000
+        asset_options.vhacd_enabled = True
+        asset_options.vhacd_params = gymapi.VhacdParams()
+        asset_options.vhacd_params.resolution = 500000
 
         asset = self.env.gym.load_asset(self.env.sim, asset_root, asset_file, asset_options)
 
@@ -44,7 +44,13 @@ class Cyberdog2(Robot):
         self.num_bodies = self.env.gym.get_asset_rigid_body_count(asset)
         dof_props_asset = self.env.gym.get_asset_dof_properties(asset)
         rigid_shape_props_asset = self.env.gym.get_asset_rigid_shape_properties(asset)
-        breakpoint()
+
+        # check the props contains friction and damping, change them to randomly sampled from the range.
+        joint_friction_range = self.env.cfg.domain_rand.joint_friction_range
+        joint_damping_range = self.env.cfg.domain_rand.joint_damping_range
+        for dof_prop in dof_props_asset:
+            dof_prop['friction'] = np.random.uniform(joint_damping_range[0], joint_damping_range[1])
+            dof_prop['damping'] = np.random.uniform(joint_friction_range[0], joint_friction_range[1])
 
         return asset, dof_props_asset, rigid_shape_props_asset
     

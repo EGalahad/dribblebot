@@ -193,36 +193,19 @@ class Runner:
                     path = './tmp/legged_data'
                     os.makedirs(path, exist_ok=True)
 
-                    ac_weight_path = f'{path}/ac_weights_{it}.pt'
-                    torch.save(self.alg.actor_critic.state_dict(), ac_weight_path)
-                    wandb.save(ac_weight_path)
-
-                    ac_weight_path = f'{path}/ac_weights_latest.pt'
-                    torch.save(self.alg.actor_critic.state_dict(), ac_weight_path)
-                    wandb.save(ac_weight_path)
-
                     adaptation_module_path = f'{path}/adaptation_module_{it}.jit'
                     adaptation_module = copy.deepcopy(self.alg.actor_critic.adaptation_module).to('cpu')
-                    # traced_script_adaptation_module = torch.jit.script(adaptation_module)
-                    # traced_script_adaptation_module.save(adaptation_module_path)
                     torch.save(adaptation_module, adaptation_module_path)
 
                     adaptation_module_path = f'{path}/adaptation_module_latest.jit'
-                    # traced_script_adaptation_module.save(adaptation_module_path)
                     torch.save(adaptation_module, adaptation_module_path)
 
                     body_path = f'{path}/body_{it}.jit'
                     body_model = copy.deepcopy(self.alg.actor_critic.actor_body).to('cpu')
-                    # traced_script_body_module = torch.jit.script(body_model)
-                    # traced_script_body_module.save(body_path)
                     torch.save(body_model, body_path)
 
                     body_path = f'{path}/body_latest.jit'
-                    # traced_script_body_module.save(body_path)
                     torch.save(body_model, body_path)
-
-                    # logger.upload_file(file_path=adaptation_module_path, target_path=f"checkpoints/", once=False)
-                    # logger.upload_file(file_path=body_path, target_path=f"checkpoints/", once=False)
 
                     ac_weights_path = f"{path}/ac_weights_{it}.pt"
                     torch.save(self.alg.actor_critic.state_dict(), ac_weights_path)

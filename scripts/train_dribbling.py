@@ -16,14 +16,16 @@ def train_go1(headless=True):
     from dribblebot_learn.ppo_cse import RunnerArgs
 
     config_cyberdog2(Cfg)
-    Cfg.env.num_envs = 1000
+    Cfg.env.num_envs = 3000
 
     RunnerArgs.resume = False
-    RunnerArgs.resume_path = "improbableailab/dribbling/j34kr9ds"
+    RunnerArgs.resume_path = ""
     RunnerArgs.resume_checkpoint = 'tmp/legged_data/ac_weights_last.pt' 
 
 
     Cfg.robot.name = "cyberdog2"
+    Cfg.ball.mass = 0.32
+    Cfg.ball.radius = 0.125
     Cfg.sensors.sensor_names = [
                         "ObjectSensor",
                         "OrientationSensor",
@@ -92,7 +94,9 @@ def train_go1(headless=True):
     Cfg.domain_rand.motor_offset_range = [-0.002, 0.002]
     Cfg.domain_rand.push_robots = False
     Cfg.domain_rand.randomize_Kp_factor = True
+    Cfg.domain_rand.Kp_factor_range = [0.8, 1.2]
     Cfg.domain_rand.randomize_Kd_factor = True
+    Cfg.domain_rand.Kd_factor_range = [0.8, 1.2]
     Cfg.domain_rand.randomize_ball_drag = True
     Cfg.domain_rand.drag_range = [0.1, 0.8]
     Cfg.domain_rand.ball_drag_rand_interval_s = 15.0
@@ -160,7 +164,7 @@ def train_go1(headless=True):
 
     # terminal conditions
     Cfg.rewards.use_terminal_body_height = True
-    Cfg.rewards.terminal_body_height = 0.2
+    Cfg.rewards.terminal_body_height = 0.16
     Cfg.rewards.use_terminal_roll_pitch = False
     Cfg.rewards.terminal_body_ori = 0.5
 
@@ -240,6 +244,13 @@ def train_go1(headless=True):
     Cfg.reward_scales.ang_vel_xy = 0.0
     Cfg.reward_scales.feet_air_time = 0.0
 
+    # regularization rewards
+    Cfg.reward_scales.feet_slip = -0.04
+    Cfg.reward_scales.base_height = -0.0
+    Cfg.rewards.base_height_target = 0.26
+    Cfg.reward_scales.lin_vel_z = -0.02
+    Cfg.reward_scales.ang_vel_xy = -0.001
+
     Cfg.rewards.kappa_gait_probs = 0.07
     Cfg.rewards.gait_force_sigma = 100.
     Cfg.rewards.gait_vel_sigma = 10.
@@ -253,7 +264,7 @@ def train_go1(headless=True):
     Cfg.normalization.friction_range = [0, 1]
     Cfg.normalization.ground_friction_range = [0.7, 4.0]
     Cfg.terrain.yaw_init_range = 3.14
-    Cfg.normalization.clip_actions = 10.0
+    Cfg.normalization.clip_actions = 100.0
 
     # reward function (not in use)
     Cfg.reward_scales.feet_slip = -0.0
@@ -264,10 +275,11 @@ def train_go1(headless=True):
 
     Cfg.asset.terminate_after_contacts_on = []
 
-    AC_Args.adaptation_labels = []
-    AC_Args.adaptation_dims = []
+    AC_Args.adaptation_labels = ["body_vel", "obj_vel"]
+    AC_Args.adaptation_dims = [3, 3]
+    AC_Args.adaptation_weights = []
 
-    RunnerArgs.save_video_interval = 100
+    RunnerArgs.save_video_interval = 500
 
     import wandb
     wandb.init(
@@ -289,7 +301,8 @@ def train_go1(headless=True):
 
     env = HistoryWrapper(env)
     runner = Runner(env, device=device)
-    runner.learn(num_learning_iterations=1000000, init_at_random_ep_len=True, eval_freq=100)
+    # runner.learn(num_learning_iterations=1000000, init_at_random_ep_len=True, eval_freq=100)
+    runner.learn(num_learning_iterations=10000, init_at_random_ep_len=True, eval_freq=100)
 
 
 if __name__ == '__main__':

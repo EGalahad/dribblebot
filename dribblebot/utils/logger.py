@@ -15,7 +15,10 @@ class Logger:
             for key in self.env.episode_sums.keys():
                 extras["train/episode"]['rew_' + key] = torch.mean(
                     self.env.episode_sums[key][env_ids])
+                extras["train/episode"]['rew_rate_' + key] = torch.mean(
+                    self.env.episode_sums[key][env_ids] / self.env.episode_length_buf[env_ids])
                 self.env.episode_sums[key][env_ids] = 0.
+            extras["train/episode"]["length"] = torch.mean(self.env.episode_length_buf[env_ids].float())
 
         # log additional curriculum info
         if self.env.cfg.terrain.curriculum:

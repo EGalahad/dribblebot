@@ -18,15 +18,13 @@ from tqdm import tqdm
 import wandb
 
 def load_policy(logdir):
-    body_file = wandb.restore('tmp/legged_data/body_68000.jit', run_path=logdir)
-    body = torch.jit.load(body_file.name)
-    import os
+    body_file = wandb.restore('tmp/legged_data/body_latest.jit', run_path=logdir)
+    body = torch.load(body_file.name)
 
-    adaptation_module_file = wandb.restore('tmp/legged_data/adaptation_module_68000.jit', run_path=logdir)
-    adaptation_module = torch.jit.load(adaptation_module_file.name)
+    adaptation_module_file = wandb.restore('tmp/legged_data/adaptation_module_latest.jit', run_path=logdir)
+    adaptation_module = torch.load(adaptation_module_file.name)
 
     def policy(obs, info={}):
-        i = 0
         latent = adaptation_module.forward(obs["obs_history"].to('cpu'))
         action = body.forward(torch.cat((obs["obs_history"].to('cpu'), latent), dim=-1))
         info['latent'] = latent
@@ -80,7 +78,9 @@ def load_env(logdir, headless=False):
     Cfg.terrain.teleport_robots = True
     # Cfg.terrain.mesh_type = "plane"
 
-    Cfg.robot.name = "go1"
+    Cfg.robot.name = "cyberdog2"
+    Cfg.ball.mass = 0.32
+    Cfg.ball.radius = 0.125
     Cfg.sensors.sensor_names = [
                         "ObjectSensor",
                         "OrientationSensor",
@@ -116,12 +116,12 @@ def load_env(logdir, headless=False):
     }
     Cfg.domain_rand.lag_timesteps = 6
     Cfg.domain_rand.randomize_lag_timesteps = True
-    Cfg.control.control_type = "actuator_net"
+    Cfg.control.control_type = "P"
     Cfg.env.num_privileged_obs = 6
 
     from dribblebot.envs.wrappers.history_wrapper import HistoryWrapper
 
-    env = VelocityTrackingEasyEnv(sim_device='cuda:0', headless=False, cfg=Cfg)
+    env = VelocityTrackingEasyEnv(sim_device='cuda:0', headless=headless, cfg=Cfg)
     env = HistoryWrapper(env)
 
     policy = load_policy(logdir)
@@ -131,7 +131,10 @@ def load_env(logdir, headless=False):
 
 def play_go1(headless=True):
 
-    log_dir = "improbableailab/dribbling/bvggoq26/"
+    # log_dir = "improbableailab/dribbling/bvggoq26/"
+    # log_dir = "elijahgalahad/dribbling/ty3iwl54" 
+    log_dir = "elijahgalahad/dribbling/li595iho"
+    log_dir = "elijahgalahad/dribbling/xsvjflgs"
 
     env, policy = load_env(log_dir, headless=headless)
 
@@ -141,7 +144,7 @@ def play_go1(headless=True):
              "bounding": [0, 0.5, 0],
              "pacing": [0, 0, 0.5]}
 
-    x_vel_cmd, y_vel_cmd, yaw_vel_cmd = 1.0, 0.0, 0.0
+    x_vel_cmd, y_vel_cmd, yaw_vel_cmd = 1.5, 1.5, 0.0
     body_height_cmd = 0.0
     step_frequency_cmd = 3.0
     gait = torch.tensor(gaits["trotting"])
@@ -202,7 +205,7 @@ def play_go1(headless=True):
     axs[1].set_ylabel("Joint Position (rad)")
 
     plt.tight_layout()
-    plt.show()
+    plt.savefig('dribbling.png')
 
 
 if __name__ == '__main__':

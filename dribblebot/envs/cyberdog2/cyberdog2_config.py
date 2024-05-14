@@ -8,7 +8,7 @@ from dribblebot.envs.base.legged_robot_config import Cfg
 def config_cyberdog2(Cnfg: Union[Cfg, Meta]):
     _ = Cnfg.init_state
 
-    _.pos = [0.0, 0.0, 0.34]  # x,y,z [m]
+    _.pos = [0.0, 0.0, 0.27]  # x,y,z [m]
     _.default_joint_angles = {  # = target angles [rad] when action = 0.0
         "FL_hip_joint": 0.0,  # [rad]
         "RL_hip_joint": 0.0,  # [rad]
@@ -26,8 +26,8 @@ def config_cyberdog2(Cnfg: Union[Cfg, Meta]):
 
     _ = Cnfg.control
     _.control_type = 'P'
-    _.stiffness = {'joint': 60.}  # [N*m/rad]
-    _.damping = {'joint': 2.}  # [N*m*s/rad]
+    _.stiffness = {'joint': 20.}  # [N*m/rad]
+    _.damping = {'joint': .5}  # [N*m*s/rad]
     # action scale: target angle = actionScale * action + defaultAngle
     _.action_scale = 0.25
     _.hip_scale_reduction = 1.0

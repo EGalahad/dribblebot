@@ -82,10 +82,36 @@ class SoccerRewards(Rewards):
         diff = diff * (self.env.last_last_actions[:,:12] != 0)  # ignore second step
         return torch.sum(diff, dim=1)
 
+    def _reward_feet_slip(self):
+        contact = self.env.contact_forces[:, self.env.feet_indices, 2] > 1.
+        contact_filt = torch.logical_or(contact, self.env.last_contacts)
+        self.env.last_contacts = contact
+        foot_velocities = torch.square(torch.norm(self.env.foot_velocities[:, :, 0:2], dim=2).view(self.env.num_envs, -1))
+        rew_slip = torch.sum(contact_filt * foot_velocities, dim=1)
+        return rew_slip
+
+    def _reward_base_height(self):
+        reference_heights = 0
+        body_height = self.env.base_pos[:, 2] - reference_heights
+        return torch.square(body_height - self.env.cfg.rewards.base_height_target)
+    
+    def _reward_lin_vel_z(self):
+        # Penalize z axis base linear velocity
+        return torch.square(self.env.base_lin_vel[:, 2])
+
+    def _reward_ang_vel_xy(self):
+        # Penalize xy axes base angular velocity
+        return torch.sum(torch.square(self.env.base_ang_vel[:, :2]), dim=1)
+
     # encourage robot velocity align vector from robot body to ball
     # r_cv
     def _reward_dribbling_robot_ball_vel(self):
-        FR_shoulder_idx = self.env.gym.find_actor_rigid_body_handle(self.env.envs[0], self.env.robot_actor_handles[0], "FR_thigh_shoulder")
+        if self.env.cfg.robot.name == "go1":
+            FR_shoulder_idx = self.env.gym.find_actor_rigid_body_handle(self.env.envs[0], self.env.robot_actor_handles[0], "FR_thigh_shoulder")
+        elif self.env.cfg.robot.name == "cyberdog2":
+            FR_shoulder_idx = self.env.gym.find_actor_rigid_body_handle(self.env.envs[0], self.env.robot_actor_handles[0], "FR_thigh")
+        if FR_shoulder_idx == -1:
+            raise ValueError("FR_shoulder_idx not found")
         FR_HIP_positions = quat_rotate_inverse(self.env.base_quat, self.env.rigid_body_state.view(self.env.num_envs, -1, 13)[:,FR_shoulder_idx,0:3].view(self.env.num_envs,3)-self.env.base_pos)
         FR_HIP_velocities = quat_rotate_inverse(self.env.base_quat, self.env.rigid_body_state.view(self.env.num_envs, -1, 13)[:,FR_shoulder_idx,7:10].view(self.env.num_envs,3))
         
@@ -101,11 +127,19 @@ class SoccerRewards(Rewards):
     # r_cp
     def _reward_dribbling_robot_ball_pos(self):
 
-        FR_shoulder_idx = self.env.gym.find_actor_rigid_body_handle(self.env.envs[0], self.env.robot_actor_handles[0], "FR_thigh_shoulder")
+        if self.env.cfg.robot.name == "go1":
+            FR_shoulder_idx = self.env.gym.find_actor_rigid_body_handle(self.env.envs[0], self.env.robot_actor_handles[0], "FR_thigh_shoulder")
+        elif self.env.cfg.robot.name == "cyberdog2":
+            FR_shoulder_idx = self.env.gym.find_actor_rigid_body_handle(self.env.envs[0], self.env.robot_actor_handles[0], "FR_thigh")
+        if FR_shoulder_idx == -1:
+            raise ValueError("FR_shoulder_idx not found")
         FR_HIP_positions = quat_rotate_inverse(self.env.base_quat, self.env.rigid_body_state.view(self.env.num_envs, -1, 13)[:,FR_shoulder_idx,0:3].view(self.env.num_envs,3)-self.env.base_pos)
 
         delta_dribbling_robot_ball_pos = 4.0
-        rew_dribbling_robot_ball_pos = torch.exp(-delta_dribbling_robot_ball_pos * torch.pow(torch.norm(self.env.object_local_pos - FR_HIP_positions, dim=-1), 2) )
+        # sometimes the dog move to close to the ball even to the point of collision and climb on the ball
+        # distance = torch.clamp_min(torch.norm(self.env.object_local_pos - FR_HIP_positions, dim=-1), 1.2 * self.env.cfg.ball.radius)
+        distance = torch.clamp_min(torch.norm(self.env.object_local_pos - FR_HIP_positions, dim=-1), 0)
+        rew_dribbling_robot_ball_pos = torch.exp(-delta_dribbling_robot_ball_pos * torch.pow(distance, 2) )
         return rew_dribbling_robot_ball_pos 
 
     # encourage ball vel align with unit vector between ball target and ball current position

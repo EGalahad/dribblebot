@@ -231,6 +231,8 @@ class LeggedRobot(BaseTask):
         self._reset_dofs(env_ids, self.cfg)
         self._reset_root_states(env_ids, self.cfg)
 
+        self.extras = self.logger.populate_log(env_ids)
+
         # reset buffers
         self.last_actions[env_ids] = 0.
         self.last_last_actions[env_ids] = 0.
@@ -241,8 +243,6 @@ class LeggedRobot(BaseTask):
         self.past_base_pos[env_ids] = self.base_pos.clone()[env_ids]
         self.reset_buf[env_ids] = 1
         
-        self.extras = self.logger.populate_log(env_ids)
-
         self.gait_indices[env_ids] = 0
 
         for i in range(len(self.lag_buffer)):
@@ -549,7 +549,9 @@ class LeggedRobot(BaseTask):
         self.default_body_mass = props[0].mass
 
         props[0].mass = self.default_body_mass + self.payloads[env_id]
-        props[0].com = props[0].com + gymapi.Vec3(self.com_displacements[env_id, 0], self.com_displacements[env_id, 1],
+        # props[0].com = props[0].com + gymapi.Vec3(self.com_displacements[env_id, 0], self.com_displacements[env_id, 1],
+        #                            self.com_displacements[env_id, 2])
+        props[0].com = gymapi.Vec3(self.com_displacements[env_id, 0], self.com_displacements[env_id, 1],
                                    self.com_displacements[env_id, 2])
         return props
 
@@ -1539,6 +1541,26 @@ class LeggedRobot(BaseTask):
             cam_distance = [0, -1.0, 1.0]
             self.rendering_camera.set_position(target_loc, cam_distance)
             self.video_frame = self.rendering_camera.get_observation()
+
+            base_pos = self.base_pos[0].cpu().numpy().tolist()
+            if self.cfg.robot.name == "go1":
+                FR_shoulder_idx = self.gym.find_actor_rigid_body_handle(self.envs[0], self.robot_actor_handles[0], "FR_thigh_shoulder")
+            elif self.cfg.robot.name == "cyberdog2":
+                FR_shoulder_idx = self.gym.find_actor_rigid_body_handle(self.envs[0], self.robot_actor_handles[0], "FR_thigh")
+            if FR_shoulder_idx == -1:
+                raise ValueError("FR_shoulder_idx not found")
+            FR_HIP_positions = quat_rotate_inverse(self.base_quat, self.rigid_body_state.view(self.num_envs, -1, 13)[:,FR_shoulder_idx,0:3].view(self.num_envs,3)-self.base_pos)
+            distance = torch.norm(self.object_local_pos[0] - FR_HIP_positions[0], dim=-1)
+            command_vel_xy = self.commands[0][:2].cpu().numpy().tolist()
+            ball_vel_xy = self.object_lin_vel[0][:2].cpu().numpy().tolist()
+
+            import cv2
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            cv2.putText(self.video_frame, f'z: {base_pos[2]:.4f}, x: {base_pos[0]:.2f}, y: {base_pos[1]:.2f}', (10, 30), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
+            cv2.putText(self.video_frame, f'distance: {distance:.2f}', (10, 60), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
+            cv2.putText(self.video_frame, f'command vel: [{command_vel_xy[0]:.2f}, {command_vel_xy[1]:.2f}]', (10, 90), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
+            cv2.putText(self.video_frame, f'ball vel: [{ball_vel_xy[0]:.2f}, {ball_vel_xy[1]:.2f}]', (10, 120), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
+
             self.video_frames.append(self.video_frame)
 
     def start_recording(self):
