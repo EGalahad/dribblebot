@@ -253,7 +253,6 @@ class Cfg(PrefixProto, cli=False):
         # types of randomization
         randomize_friction = True
         randomize_friction_indep = False
-        randomize_ground_friction = False
         randomize_restitution = False
         randomize_ground_friction = False
         randomize_ground_restitution = False
@@ -299,13 +298,17 @@ class Cfg(PrefixProto, cli=False):
         # randomize joint dynamics
         joint_friction_range = [0.03, 0.08]
         joint_damping_range = [0.02, 0.06]
+
+        # the actual robot cannot see the ball when it is too close
+        # when this flag is True, will set the ball to a fixed position under its head  when it is too close
+        model_unseen = False
         
         
 
     class rewards(PrefixProto, cli=False):
-        only_positive_rewards = True  # if true negative total rewards are clipped at zero (avoids early termination problems)
+        only_positive_rewards = False  # if true negative total rewards are clipped at zero (avoids early termination problems)
         only_positive_rewards_ji22_style = False
-        sigma_rew_neg = 5
+        sigma_rew_neg = 0.02
         reward_container_name = "SoccerRewards"
         tracking_sigma = 0.25  # tracking reward = exp(-error^2/sigma)
         tracking_sigma_lat = 0.25  # tracking reward = exp(-error^2/sigma)
@@ -321,12 +324,14 @@ class Cfg(PrefixProto, cli=False):
         use_terminal_roll_pitch = False
         terminal_body_ori = 0.5
         kappa_gait_probs = 0.07
-        gait_force_sigma = 50.
-        gait_vel_sigma = 0.5
+        gait_force_sigma = 100.
+        gait_vel_sigma = 10.
         footswing_height = 0.09
         front_target = [[0.17, -0.09, 0]]
         estimation_bonus_dims = []
         estimation_bonus_weights = []
+        
+        relative_use_head = False
         
         constrict = False
         constrict_indices = []

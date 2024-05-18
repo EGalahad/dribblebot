@@ -73,7 +73,7 @@ class LeggedRobot(BaseTask):
 
         # step physics and render each frame
         self.pre_physics_step()
-        
+
         for _ in range(self.cfg.control.decimation):
             self.torques = self._compute_torques(self.actions).view(self.torques.shape)
             if self.ball_force_feedback is not None:
@@ -503,13 +503,13 @@ class LeggedRobot(BaseTask):
         if cfg.env.add_balls:
             if cfg.domain_rand.randomize_ball_restitution:
                 min_restitution, max_restitution = cfg.domain_rand.ball_restitution_range
-                self.ball_restitutions[env_ids] = torch.rand(len(env_ids), 1, dtype=torch.float, device=self.device,
+                self.ball_restitutions[env_ids] = torch.rand(len(env_ids), dtype=torch.float, device=self.device,
                                                         requires_grad=False) * (
                                                     max_restitution - min_restitution) + min_restitution
 
             if cfg.domain_rand.randomize_ball_friction:
                 min_friction, max_friction = cfg.domain_rand.ball_friction_range
-                self.ball_friction_coeffs[env_ids] = torch.rand(len(env_ids), 1, dtype=torch.float, device=self.device,
+                self.ball_friction_coeffs[env_ids] = torch.rand(len(env_ids), dtype=torch.float, device=self.device,
                                                         requires_grad=False) * (
                                                     max_friction - min_friction) + min_friction
 
@@ -1039,6 +1039,11 @@ class LeggedRobot(BaseTask):
 
         self.contact_forces = gymtorch.wrap_tensor(net_contact_forces)[:self.num_envs*self.total_rigid_body_num,:].view(self.num_envs,self.total_rigid_body_num,3)[:,0:self.num_bodies, :]
 
+        # the offset from the base com to the head camera
+        self.head_offset = torch.zeros(self.num_envs, 3, dtype=torch.float, device=self.device, requires_grad=False)
+        self.head_offset[:, 0] = 0.271994
+        self.head_offset[:, 1] = 0.114912
+
         if self.cfg.env.add_balls:
             self.object_pos_world_frame = self.root_states[self.object_actor_idxs, 0:3]
             robot_object_vec = self.asset.get_local_pos()
@@ -1543,16 +1548,23 @@ class LeggedRobot(BaseTask):
             self.video_frame = self.rendering_camera.get_observation()
 
             base_pos = self.base_pos[0].cpu().numpy().tolist()
-            if self.cfg.robot.name == "go1":
-                FR_shoulder_idx = self.gym.find_actor_rigid_body_handle(self.envs[0], self.robot_actor_handles[0], "FR_thigh_shoulder")
-            elif self.cfg.robot.name == "cyberdog2":
-                FR_shoulder_idx = self.gym.find_actor_rigid_body_handle(self.envs[0], self.robot_actor_handles[0], "FR_thigh")
-            if FR_shoulder_idx == -1:
-                raise ValueError("FR_shoulder_idx not found")
-            FR_HIP_positions = quat_rotate_inverse(self.base_quat, self.rigid_body_state.view(self.num_envs, -1, 13)[:,FR_shoulder_idx,0:3].view(self.num_envs,3)-self.base_pos)
+            if self.env.cfg.rewards.relative_use_head:
+                FR_HIP_positions = self.env.head_offset
+                FR_HIP_velocities = torch.cross(self.env.base_ang_vel, self.env.head_offset, dim=1) + self.env.base_lin_vel
+            else:
+                if self.env.cfg.robot.name == "go1":
+                    FR_shoulder_idx = self.env.gym.find_actor_rigid_body_handle(self.env.envs[0], self.env.robot_actor_handles[0], "FR_thigh_shoulder")
+                elif self.env.cfg.robot.name == "cyberdog2":
+                    FR_shoulder_idx = self.env.gym.find_actor_rigid_body_handle(self.env.envs[0], self.env.robot_actor_handles[0], "FR_thigh")
+                if FR_shoulder_idx == -1:
+                    raise ValueError("FR_shoulder_idx not found")
+                FR_HIP_positions = quat_rotate_inverse(self.env.base_quat, self.env.rigid_body_state.view(self.env.num_envs, -1, 13)[:,FR_shoulder_idx,0:3].view(self.env.num_envs,3)-self.env.base_pos)
+                FR_HIP_velocities = quat_rotate_inverse(self.env.base_quat, self.env.rigid_body_state.view(self.env.num_envs, -1, 13)[:,FR_shoulder_idx,7:10].view(self.env.num_envs,3))
+            
             distance = torch.norm(self.object_local_pos[0] - FR_HIP_positions[0], dim=-1)
             command_vel_xy = self.commands[0][:2].cpu().numpy().tolist()
             ball_vel_xy = self.object_lin_vel[0][:2].cpu().numpy().tolist()
+            ball_pos_xy = self.object_local_pos[0][:2].cpu().numpy().tolist()
 
             import cv2
             font = cv2.FONT_HERSHEY_SIMPLEX
@@ -1560,6 +1572,7 @@ class LeggedRobot(BaseTask):
             cv2.putText(self.video_frame, f'distance: {distance:.2f}', (10, 60), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
             cv2.putText(self.video_frame, f'command vel: [{command_vel_xy[0]:.2f}, {command_vel_xy[1]:.2f}]', (10, 90), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
             cv2.putText(self.video_frame, f'ball vel: [{ball_vel_xy[0]:.2f}, {ball_vel_xy[1]:.2f}]', (10, 120), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
+            cv2.putText(self.video_frame, F"hip/head velocity: [{FR_HIP_velocities[0][0]:.2f}, {FR_HIP_velocities[0][1]:.2f}, {FR_HIP_velocities[0][2]:.2f}]", (10, 150), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
             self.video_frames.append(self.video_frame)
 
