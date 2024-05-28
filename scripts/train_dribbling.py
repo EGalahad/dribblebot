@@ -27,18 +27,21 @@ def train_go1(headless=True):
     # Cfg.domain_rand.model_unseen = True
     # Cfg.reward_scales.visual_orientation = 0.1
     # Cfg.reward_scales.visual_orientation = 0.0
-    Cfg.reward_scales.base_height = 0.0
+
+    # Cfg.reward_scales.base_height = -10
+    Cfg.reward_scales.base_height = 0
     
     # Cfg.reward_scales.action_rate = -0.05
     # Cfg.reward_scales.action_smoothness_1 = -0.5
     # Cfg.reward_scales.action_smoothness_2 = -0.5
     # Cfg.reward_scales.torques = -0.0005
 
-    Cfg.reward_scales.dof_pos = -0.5
-    # Cfg.reward_scales.dof_pos = -0.1
+    # Cfg.reward_scales.dof_pos = -0.5
+    Cfg.reward_scales.dof_pos = -0.1
 
     Cfg.reward_scales.orientation = -5
-    Cfg.reward_scales.pitch = -5
+    # Cfg.reward_scales.pitch = -5
+    Cfg.reward_scales.pitch_forward = -5
 
     
     Cfg.noise.add_noise = True

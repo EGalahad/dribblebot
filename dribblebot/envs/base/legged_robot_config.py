@@ -346,6 +346,7 @@ class Cfg(PrefixProto, cli=False):
         ang_vel_xy = -0.05
         orientation = -0.
         pitch = -0.
+        pitch_forward = -0.
         torques = -0.00001
         dof_vel = -0.
         dof_acc = -2.5e-7
