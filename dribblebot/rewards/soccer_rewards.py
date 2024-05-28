@@ -15,6 +15,10 @@ class SoccerRewards(Rewards):
         # Penalize non flat base orientation
         return torch.sum(torch.square(self.env.projected_gravity[:, :2]), dim=1)
 
+    def _reward_pitch(self):
+        # Penalize pitch
+        return torch.square(self.env.projected_gravity[:, 1])
+        
     def _reward_torques(self):
         # Penalize torques
         return torch.sum(torch.square(self.env.torques), dim=1)
@@ -103,12 +107,23 @@ class SoccerRewards(Rewards):
         # Penalize xy axes base angular velocity
         return torch.sum(torch.square(self.env.base_ang_vel[:, :2]), dim=1)
 
+
+    # encourage the head pointing towards the ball
+    def _reward_visual_orientation(self):
+        head_ball_vec = self.env.object_local_pos - self.env.head_offset
+        # the vector of the camera ray is [1, 0, 0], compute the cosine of the camera ray and the vector from the head to the ball
+        head_ball_cos = torch.sum(head_ball_vec * self.env.camera_orientation, dim=-1) / torch.norm(head_ball_vec, dim=-1)
+        head_ball_cos.clamp_max_(0.6)
+        delta_visual_orientation = 0.5
+        rew_visual_orientation = torch.exp(-delta_visual_orientation * head_ball_cos)
+        return rew_visual_orientation
+        
     # encourage robot velocity align vector from robot body to ball
     # r_cv
     def _reward_dribbling_robot_ball_vel(self):
         if self.env.cfg.rewards.relative_use_head:
             FR_HIP_positions = self.env.head_offset
-            FR_HIP_velocities = torch.cross(self.env.base_ang_vel, self.env.head_offset, dim=1) + self.env.base_lin_vel
+            FR_HIP_velocities = torch.cross(self.env.base_ang_vel, self.env.head_offset, dim=1) + quat_rotate_inverse(self.env.base_quat, self.env.base_lin_vel)
         else:
             if self.env.cfg.robot.name == "go1":
                 FR_shoulder_idx = self.env.gym.find_actor_rigid_body_handle(self.env.envs[0], self.env.robot_actor_handles[0], "FR_thigh_shoulder")

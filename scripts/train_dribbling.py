@@ -24,7 +24,23 @@ def train_go1(headless=True):
     Cfg.env.num_envs = 3000
     num_learning_iterations = 10000
 
-    Cfg.domain_rand.model_unseen = True
+    # Cfg.domain_rand.model_unseen = True
+    # Cfg.reward_scales.visual_orientation = 0.1
+    # Cfg.reward_scales.visual_orientation = 0.0
+    Cfg.reward_scales.base_height = 0.0
+    
+    # Cfg.reward_scales.action_rate = -0.05
+    # Cfg.reward_scales.action_smoothness_1 = -0.5
+    # Cfg.reward_scales.action_smoothness_2 = -0.5
+    # Cfg.reward_scales.torques = -0.0005
+
+    Cfg.reward_scales.dof_pos = -0.5
+    # Cfg.reward_scales.dof_pos = -0.1
+
+    Cfg.reward_scales.orientation = -5
+    Cfg.reward_scales.pitch = -5
+
+    
     Cfg.noise.add_noise = True
     Cfg.noise.noise_level = 1
     Cfg.noise_scales.ball_pos = 0.1
@@ -49,7 +65,8 @@ def train_go1(headless=True):
     Cfg.commands.num_ang_vel_bins = 30
     Cfg.commands.distributional_commands = True
 
-    Cfg.rewards.relative_use_head = True
+    # Cfg.rewards.relative_use_head = True
+    Cfg.rewards.relative_use_head = False
 
     Cfg.curriculum_thresholds.tracking_ang_vel = 0.7
     Cfg.curriculum_thresholds.tracking_lin_vel = 0.8
@@ -66,7 +83,7 @@ def train_go1(headless=True):
     # randomize the rigid shape props of robot joints
     Cfg.domain_rand.randomize_rigids_after_start = False
     Cfg.domain_rand.randomize_friction = False
-    Cfg.domain_rand.randomize_restitution = True
+    Cfg.domain_rand.randomize_restitution = False
     Cfg.domain_rand.friction_range = [0.0, 1.5]
     Cfg.domain_rand.restitution_range = [0.0, 0.4]
 
@@ -86,22 +103,22 @@ def train_go1(headless=True):
     Cfg.domain_rand.Kd_factor_range = [0.8, 1.2]
 
     # external forces
-    Cfg.domain_rand.push_robots = True
-    Cfg.domain_rand.max_push_vel_xy = 0.5
+    Cfg.domain_rand.push_robots = False
+    Cfg.domain_rand.max_push_vel_xy = 1.0
     
     # randomize the ball properties
-    Cfg.domain_rand.randomize_ball_friction = True
-    Cfg.domain_rand.randomize_ball_restitution = True
+    Cfg.domain_rand.randomize_ball_friction = False
+    Cfg.domain_rand.randomize_ball_restitution = False
     Cfg.domain_rand.randomize_ball_drag = True
     Cfg.domain_rand.ball_friction_range = [0.5, 1]
     Cfg.domain_rand.ball_restitution_range = [0.2, 1]
-    Cfg.domain_rand.drag_range = [0.1, 0.8]
+    Cfg.domain_rand.drag_range = [0.4, 0.8]
     Cfg.domain_rand.ball_drag_rand_interval_s = 15.0
 
     # randomize the ground properties
     Cfg.domain_rand.randomize_ground_friction = True
-    Cfg.domain_rand.randomize_ground_restitution = True
-    Cfg.domain_rand.ground_friction_range = [0.7, 4.0]
+    Cfg.domain_rand.randomize_ground_restitution = False
+    Cfg.domain_rand.ground_friction_range = [0.2, 2.0]
     Cfg.domain_rand.ground_restitution_range = [0.6, 1.0]
     Cfg.domain_rand.tile_roughness_range = [0.0, 0.0]
 
@@ -201,8 +218,8 @@ def train_go1(headless=True):
     import wandb
     wandb.init(
       # set the wandb project where this run will be logged
-      project="dribbling",
-
+      entity="cyber dribble",
+      project="dribbling cyberdog",
       # track hyperparameters and run metadata
       config={
       "AC_Args": vars(AC_Args),

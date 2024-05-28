@@ -12,9 +12,9 @@ class ObjectSensor(Sensor):
         # [num_envs, 3]
         if self.env.cfg.domain_rand.model_unseen:
             # if ball pos is [-0.4~0.4, -0.2~0.2], then it is not visible to the robot, we will set it at [0.2, 0]
-            invisible_mask = (ball_pos[:, 0] < -0.4) | (ball_pos[:, 0] > 0.4) | (ball_pos[:, 1] < -0.2) | (ball_pos[:, 1] > 0.2)
-            ball_pos[invisible_mask][0] = 0.2
-            ball_pos[invisible_mask][1] = 0
+            invisible_mask = (ball_pos[:, 0] > -0.4) & (ball_pos[:, 0] < 0.4) & (ball_pos[:, 1] > -0.2) & (ball_pos[:, 1] < 0.2)
+            ball_pos[invisible_mask, 0] = 0.2
+            ball_pos[invisible_mask, 1] = 0
         return ball_pos * self.env.cfg.obs_scales.ball_pos
     
     def get_noise_vec(self):

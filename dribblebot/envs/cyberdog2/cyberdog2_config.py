@@ -9,25 +9,69 @@ def config_cyberdog2(Cnfg: Union[Cfg, Meta]):
     _ = Cnfg.init_state
 
     _.pos = [0.0, 0.0, 0.27]  # x,y,z [m]
+    # _.default_joint_angles = {  # = target angles [rad] when action = 0.0
+    #     "FL_hip_joint": 0.0,  # [rad]
+    #     "RL_hip_joint": 0.0,  # [rad]
+    #     "FR_hip_joint": 0.0,  # [rad]
+    #     "RR_hip_joint": 0.0,  # [rad]
+    #     "FL_thigh_joint": -45 / 57.3,  # [rad]
+    #     "RL_thigh_joint": -45 / 57.3,  # [rad]
+    #     "FR_thigh_joint": -45 / 57.3,  # [rad]
+    #     "RR_thigh_joint": -45 / 57.3,  # [rad]
+    #     "FL_calf_joint": 70 / 57.3,  # [rad]
+    #     "RL_calf_joint": 70 / 57.3,  # [rad]
+    #     "FR_calf_joint": 70 / 57.3,  # [rad]
+    #     "RR_calf_joint": 70 / 57.3,  # [rad]
+    # }
+
     _.default_joint_angles = {  # = target angles [rad] when action = 0.0
         "FL_hip_joint": 0.0,  # [rad]
         "RL_hip_joint": 0.0,  # [rad]
         "FR_hip_joint": 0.0,  # [rad]
         "RR_hip_joint": 0.0,  # [rad]
-        "FL_thigh_joint": -45 / 57.3,  # [rad]
+        "FL_thigh_joint": -30 / 57.3,  # [rad]
         "RL_thigh_joint": -45 / 57.3,  # [rad]
-        "FR_thigh_joint": -45 / 57.3,  # [rad]
+        "FR_thigh_joint": -30 / 57.3,  # [rad]
         "RR_thigh_joint": -45 / 57.3,  # [rad]
-        "FL_calf_joint": 70 / 57.3,  # [rad]
+        "FL_calf_joint": 60 / 57.3,  # [rad]
         "RL_calf_joint": 70 / 57.3,  # [rad]
-        "FR_calf_joint": 70 / 57.3,  # [rad]
+        "FR_calf_joint": 60 / 57.3,  # [rad]
         "RR_calf_joint": 70 / 57.3,  # [rad]
     }
 
+    # _.default_joint_angles = {  # = target angles [rad] when action = 0.0
+    #     "FL_hip_joint": 0.0,  # [rad]
+    #     "RL_hip_joint": 0.0,  # [rad]
+    #     "FR_hip_joint": 0.0,  # [rad]
+    #     "RR_hip_joint": 0.0,  # [rad]
+    #     "FL_thigh_joint": -50 / 57.3,  # [rad]
+    #     "RL_thigh_joint": -50 / 57.3,  # [rad]
+    #     "FR_thigh_joint": -50 / 57.3,  # [rad]
+    #     "RR_thigh_joint": -50 / 57.3,  # [rad]
+    #     "FL_calf_joint": 80 / 57.3,  # [rad]
+    #     "RL_calf_joint": 80 / 57.3,  # [rad]
+    #     "FR_calf_joint": 80 / 57.3,  # [rad]
+    #     "RR_calf_joint": 80 / 57.3,  # [rad]
+    # }
+    # _.default_joint_angles = {  # = target angles [rad] when action = 0.0
+    #     "FL_hip_joint": 0.0,  # [rad]
+    #     "RL_hip_joint": 0.0,  # [rad]
+    #     "FR_hip_joint": 0.0,  # [rad]
+    #     "RR_hip_joint": 0.0,  # [rad]
+    #     "FL_thigh_joint": -60 / 57.3,  # [rad]
+    #     "RL_thigh_joint": -60 / 57.3,  # [rad]
+    #     "FR_thigh_joint": -60 / 57.3,  # [rad]
+    #     "RR_thigh_joint": -60 / 57.3,  # [rad]
+    #     "FL_calf_joint": 100 / 57.3,  # [rad]
+    #     "RL_calf_joint": 100 / 57.3,  # [rad]
+    #     "FR_calf_joint": 100 / 57.3,  # [rad]
+    #     "RR_calf_joint": 100 / 57.3,  # [rad]
+    # }
+
     _ = Cnfg.control
     _.control_type = 'P'
-    _.stiffness = {'joint': 40.}  # [N*m/rad]
-    _.damping = {'joint': 1.}  # [N*m*s/rad]
+    _.stiffness = {'joint': 20.}  # [N*m/rad]
+    _.damping = {'joint': 0.5}  # [N*m*s/rad]
     # action scale: target angle = actionScale * action + defaultAngle
     _.action_scale = 0.25
     _.hip_scale_reduction = 1.0
@@ -38,16 +82,16 @@ def config_cyberdog2(Cnfg: Union[Cfg, Meta]):
     _.file = '{MINI_GYM_ROOT_DIR}/resources/robots/cyberdog2/urdf/cyberdog2_v2.urdf'
     _.foot_name = "foot"
     _.penalize_contacts_on = ["thigh", "calf"]
-    _.terminate_after_contacts_on = ["base"]
+    _.terminate_after_contacts_on = []
     _.self_collisions = 0  # 1 to disable, 0 to enable...bitwise filter
     _.flip_visual_attachments = True
     _.fix_base_link = False
 
     _ = Cnfg.rewards
     _.soft_dof_pos_limit = 0.9
-    _.base_height_target = 0.26
+    _.base_height_target = 0.20
     _.use_terminal_body_height = True
-    _.terminal_body_height = 0.12
+    _.terminal_body_height = 0.16
     _.use_terminal_roll_pitch = True
     _.terminal_body_ori = 0.5
     _.relative_use_head = False
@@ -55,8 +99,12 @@ def config_cyberdog2(Cnfg: Union[Cfg, Meta]):
     _.only_positive_rewards_ji22_style = True
 
     _ = Cnfg.reward_scales
+    _.tracking_lin_vel = 0.0
+    _.tracking_ang_vel = 0.0
+    _.feet_air_time = 0.0
     _.orientation = -5.
-    _.torques = -0.00001
+    _.torques = -0.0001
+    _.dof_pos = -0.05
     _.dof_vel = -0.0001
     _.dof_acc = -2.5e-7
     _.collision = -5.0

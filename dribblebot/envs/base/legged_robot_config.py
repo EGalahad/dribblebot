@@ -345,6 +345,7 @@ class Cfg(PrefixProto, cli=False):
         lin_vel_z = -2.0
         ang_vel_xy = -0.05
         orientation = -0.
+        pitch = -0.
         torques = -0.00001
         dof_vel = -0.
         dof_acc = -2.5e-7
@@ -389,6 +390,7 @@ class Cfg(PrefixProto, cli=False):
         robot_door_pos = 0.0
         robot_door_ori = 0.0
         estimation_bonus = 0.0
+        visual_orientation = 0.0
 
     class normalization(PrefixProto, cli=False):
         clip_observations = 100.
