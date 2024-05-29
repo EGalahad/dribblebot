@@ -9,35 +9,35 @@ def config_cyberdog2(Cnfg: Union[Cfg, Meta]):
     _ = Cnfg.init_state
 
     _.pos = [0.0, 0.0, 0.27]  # x,y,z [m]
-    # _.default_joint_angles = {  # = target angles [rad] when action = 0.0
-    #     "FL_hip_joint": 0.0,  # [rad]
-    #     "RL_hip_joint": 0.0,  # [rad]
-    #     "FR_hip_joint": 0.0,  # [rad]
-    #     "RR_hip_joint": 0.0,  # [rad]
-    #     "FL_thigh_joint": -45 / 57.3,  # [rad]
-    #     "RL_thigh_joint": -45 / 57.3,  # [rad]
-    #     "FR_thigh_joint": -45 / 57.3,  # [rad]
-    #     "RR_thigh_joint": -45 / 57.3,  # [rad]
-    #     "FL_calf_joint": 70 / 57.3,  # [rad]
-    #     "RL_calf_joint": 70 / 57.3,  # [rad]
-    #     "FR_calf_joint": 70 / 57.3,  # [rad]
-    #     "RR_calf_joint": 70 / 57.3,  # [rad]
-    # }
-
     _.default_joint_angles = {  # = target angles [rad] when action = 0.0
         "FL_hip_joint": 0.0,  # [rad]
         "RL_hip_joint": 0.0,  # [rad]
         "FR_hip_joint": 0.0,  # [rad]
         "RR_hip_joint": 0.0,  # [rad]
-        "FL_thigh_joint": -30 / 57.3,  # [rad]
+        "FL_thigh_joint": -45 / 57.3,  # [rad]
         "RL_thigh_joint": -45 / 57.3,  # [rad]
-        "FR_thigh_joint": -30 / 57.3,  # [rad]
+        "FR_thigh_joint": -45 / 57.3,  # [rad]
         "RR_thigh_joint": -45 / 57.3,  # [rad]
-        "FL_calf_joint": 60 / 57.3,  # [rad]
+        "FL_calf_joint": 70 / 57.3,  # [rad]
         "RL_calf_joint": 70 / 57.3,  # [rad]
-        "FR_calf_joint": 60 / 57.3,  # [rad]
+        "FR_calf_joint": 70 / 57.3,  # [rad]
         "RR_calf_joint": 70 / 57.3,  # [rad]
     }
+
+    # _.default_joint_angles = {  # = target angles [rad] when action = 0.0
+    #     "FL_hip_joint": 0.0,  # [rad]
+    #     "RL_hip_joint": 0.0,  # [rad]
+    #     "FR_hip_joint": 0.0,  # [rad]
+    #     "RR_hip_joint": 0.0,  # [rad]
+    #     "FL_thigh_joint": -30 / 57.3,  # [rad]
+    #     "RL_thigh_joint": -45 / 57.3,  # [rad]
+    #     "FR_thigh_joint": -30 / 57.3,  # [rad]
+    #     "RR_thigh_joint": -45 / 57.3,  # [rad]
+    #     "FL_calf_joint": 60 / 57.3,  # [rad]
+    #     "RL_calf_joint": 70 / 57.3,  # [rad]
+    #     "FR_calf_joint": 60 / 57.3,  # [rad]
+    #     "RR_calf_joint": 70 / 57.3,  # [rad]
+    # }
 
     # _.default_joint_angles = {  # = target angles [rad] when action = 0.0
     #     "FL_hip_joint": 0.0,  # [rad]
@@ -58,20 +58,20 @@ def config_cyberdog2(Cnfg: Union[Cfg, Meta]):
     #     "RL_hip_joint": 0.0,  # [rad]
     #     "FR_hip_joint": 0.0,  # [rad]
     #     "RR_hip_joint": 0.0,  # [rad]
-    #     "FL_thigh_joint": -60 / 57.3,  # [rad]
+    #     "FL_thigh_joint": -45 / 57.3,  # [rad]
     #     "RL_thigh_joint": -60 / 57.3,  # [rad]
-    #     "FR_thigh_joint": -60 / 57.3,  # [rad]
+    #     "FR_thigh_joint": -45 / 57.3,  # [rad]
     #     "RR_thigh_joint": -60 / 57.3,  # [rad]
-    #     "FL_calf_joint": 100 / 57.3,  # [rad]
-    #     "RL_calf_joint": 100 / 57.3,  # [rad]
-    #     "FR_calf_joint": 100 / 57.3,  # [rad]
-    #     "RR_calf_joint": 100 / 57.3,  # [rad]
+    #     "FL_calf_joint": 90 / 57.3,  # [rad]
+    #     "RL_calf_joint": 90 / 57.3,  # [rad]
+    #     "FR_calf_joint": 90 / 57.3,  # [rad]
+    #     "RR_calf_joint": 90 / 57.3,  # [rad]
     # }
 
     _ = Cnfg.control
     _.control_type = 'P'
-    _.stiffness = {'joint': 20.}  # [N*m/rad]
-    _.damping = {'joint': 0.5}  # [N*m*s/rad]
+    _.stiffness = {'joint': 60.}  # [N*m/rad]
+    _.damping = {'joint': 2. }  # [N*m*s/rad]
     # action scale: target angle = actionScale * action + defaultAngle
     _.action_scale = 0.25
     _.hip_scale_reduction = 1.0
@@ -174,6 +174,8 @@ def config_cyberdog2(Cnfg: Union[Cfg, Meta]):
     _.randomize_Kd_factor = False
     _.Kd_factor_range = [0.5, 1.5]
     _.rand_interval_s = 6
+    _.joint_damping_range = [0.01, 0.05]
+    _.joint_friction_range = [0.01, 0.05]
 
     _ = Cnfg.normalization
     _.clip_actions = 100

@@ -17,8 +17,8 @@ def train_go1(headless=True):
 
     config_cyberdog2(Cfg)
     RunnerArgs.resume = False
-    RunnerArgs.resume_path = ""
-    RunnerArgs.resume_checkpoint = 'tmp/legged_data/ac_weights_last.pt' 
+    RunnerArgs.resume_path = "cyber dribble/dribbling cyberdog/ohe4cp2k"
+    RunnerArgs.resume_checkpoint = 'tmp/legged_data/ac_weights_latest.pt' 
 
     # may change number of environments
     Cfg.env.num_envs = 3000
@@ -28,13 +28,16 @@ def train_go1(headless=True):
     # Cfg.reward_scales.visual_orientation = 0.1
     # Cfg.reward_scales.visual_orientation = 0.0
 
+    Cfg.control.stiffness = {'joint': 20.}  # [N*m/rad]
+    Cfg.control.damping = {'joint': 0.5 }  # [N*m*s/rad]
+    # Cfg.control.stiffness = {'joint': 60.}  # [N*m/rad]
+    # Cfg.control.damping = {'joint': .5 }  # [N*m*s/rad]
+
     # Cfg.reward_scales.base_height = -10
     Cfg.reward_scales.base_height = 0
     
+    Cfg.reward_scales.action_rate = -0.01
     # Cfg.reward_scales.action_rate = -0.05
-    # Cfg.reward_scales.action_smoothness_1 = -0.5
-    # Cfg.reward_scales.action_smoothness_2 = -0.5
-    # Cfg.reward_scales.torques = -0.0005
 
     # Cfg.reward_scales.dof_pos = -0.5
     Cfg.reward_scales.dof_pos = -0.1
@@ -47,6 +50,11 @@ def train_go1(headless=True):
     Cfg.noise.add_noise = True
     Cfg.noise.noise_level = 1
     Cfg.noise_scales.ball_pos = 0.1
+
+    # Cfg.domain_rand.joint_friction_range = [0.03, 0.08]
+    # Cfg.domain_rand.joint_damping_range = [0.02, 0.06]
+    Cfg.domain_rand.joint_damping_range = [0.005, 0.02]
+    Cfg.domain_rand.joint_friction_range = [0.005, 0.02]
 
 
     # may change number of history frames and privileged observations
@@ -106,8 +114,8 @@ def train_go1(headless=True):
     Cfg.domain_rand.Kd_factor_range = [0.8, 1.2]
 
     # external forces
-    Cfg.domain_rand.push_robots = False
-    Cfg.domain_rand.max_push_vel_xy = 1.0
+    Cfg.domain_rand.push_robots = True
+    Cfg.domain_rand.max_push_vel_xy = 0.3
     
     # randomize the ball properties
     Cfg.domain_rand.randomize_ball_friction = False

@@ -49,6 +49,8 @@ class Cyberdog2(Robot):
         joint_friction_range = self.env.cfg.domain_rand.joint_friction_range
         joint_damping_range = self.env.cfg.domain_rand.joint_damping_range
         for dof_prop in dof_props_asset:
+            # friction originally 0.2
+            # damping originally 0.05
             dof_prop['friction'] = np.random.uniform(joint_damping_range[0], joint_damping_range[1])
             dof_prop['damping'] = np.random.uniform(joint_friction_range[0], joint_friction_range[1])
 
