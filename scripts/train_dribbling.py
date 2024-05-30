@@ -20,24 +20,17 @@ def train_go1(headless=True):
     RunnerArgs.resume_path = "cyber dribble/dribbling cyberdog/ohe4cp2k"
     RunnerArgs.resume_checkpoint = 'tmp/legged_data/ac_weights_latest.pt' 
 
+    object_freq = 5
+    Cfg.domain_rand.detection_decimation = object_decimation = int(50 / object_freq)
+
     # may change number of environments
     Cfg.env.num_envs = 3000
     num_learning_iterations = 10000
 
-    # Cfg.domain_rand.model_unseen = True
-    # Cfg.reward_scales.visual_orientation = 0.1
-    # Cfg.reward_scales.visual_orientation = 0.0
-
-    Cfg.control.stiffness = {'joint': 20.}  # [N*m/rad]
-    Cfg.control.damping = {'joint': 0.5 }  # [N*m*s/rad]
-    # Cfg.control.stiffness = {'joint': 60.}  # [N*m/rad]
-    # Cfg.control.damping = {'joint': .5 }  # [N*m*s/rad]
-
-    # Cfg.reward_scales.base_height = -10
-    Cfg.reward_scales.base_height = 0
-    
     Cfg.reward_scales.action_rate = -0.01
     # Cfg.reward_scales.action_rate = -0.05
+    Cfg.reward_scales.torques = -1e-3
+    # Cfg.reward_scales.torques = -1e-4
 
     # Cfg.reward_scales.dof_pos = -0.5
     Cfg.reward_scales.dof_pos = -0.1
@@ -46,7 +39,6 @@ def train_go1(headless=True):
     # Cfg.reward_scales.pitch = -5
     Cfg.reward_scales.pitch_forward = -5
 
-    
     Cfg.noise.add_noise = True
     Cfg.noise.noise_level = 1
     Cfg.noise_scales.ball_pos = 0.1
@@ -61,7 +53,31 @@ def train_go1(headless=True):
     Cfg.env.num_observation_history = 15
     Cfg.env.num_privileged_obs = 6
 
-
+    Cfg.sensors.sensor_names = [
+                        "ObjectSensor",
+                        "OrientationSensor",
+                        "RCSensor",
+                        "JointPositionSensor",
+                        "JointVelocitySensor",
+                        "ActionSensor",
+                        "LastActionSensor",
+                        "ClockSensor",
+                        "YawSensor",
+                        "TimingSensor",
+                        ]
+    Cfg.sensors.sensor_args = {
+                        "ObjectSensor": {"decimation": object_decimation},
+                        "OrientationSensor": {},
+                        "RCSensor": {},
+                        "JointPositionSensor": {},
+                        "JointVelocitySensor": {},
+                        "ActionSensor": {},
+                        "LastActionSensor": {"delay": 1},
+                        "ClockSensor": {},
+                        "YawSensor": {},
+                        "TimingSensor":{},
+                        }
+  
     Cfg.sensors.privileged_sensor_names = {
                         "BodyVelocitySensor": {},
                         "ObjectVelocitySensor": {},

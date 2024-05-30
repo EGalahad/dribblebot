@@ -302,6 +302,7 @@ class Cfg(PrefixProto, cli=False):
         # the actual robot cannot see the ball when it is too close
         # when this flag is True, will set the ball to a fixed position under its head  when it is too close
         model_unseen = False
+        detection_decimation = 1
         
         
 

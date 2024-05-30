@@ -176,6 +176,7 @@ def config_cyberdog2(Cnfg: Union[Cfg, Meta]):
     _.rand_interval_s = 6
     _.joint_damping_range = [0.01, 0.05]
     _.joint_friction_range = [0.01, 0.05]
+    _.detection_decimation = 10
 
     _ = Cnfg.normalization
     _.clip_actions = 100
@@ -183,6 +184,8 @@ def config_cyberdog2(Cnfg: Union[Cfg, Meta]):
     _ = Cnfg.ball
     _.mass = 0.32
     _.radius = 0.1225
+    _.ball_init_pos = [0.0, 0.0, 0.15]
+    _.init_pos_range = [7.0, 7.0, 0.05]
     
     _ = Cnfg.robot
     _.name = 'cyberdog2'
