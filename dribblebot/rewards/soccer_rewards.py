@@ -21,7 +21,7 @@ class SoccerRewards(Rewards):
 
     def _reward_pitch_forward(self):
         # Penalize only pitch forward
-        return torch.square(torch.clamp_min(self.env.projected_gravity[:, 0]+0.1, 0.))
+        return torch.square(torch.clamp_min(self.env.projected_gravity[:, 0], 0.))
         
     def _reward_torques(self):
         # Penalize torques

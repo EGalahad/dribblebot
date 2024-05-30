@@ -108,6 +108,8 @@ class PPO:
         mean_adaptation_module_test_loss = 0
         mean_decoder_test_loss = 0
         mean_decoder_test_loss_student = 0
+        mean_explained_variance = 0
+        mean_ac_grad_norm = 0
         
         mean_adaptation_losses = {}
         label_start_end = {}
@@ -162,17 +164,20 @@ class PPO:
                 value_loss = torch.max(value_losses, value_losses_clipped).mean()
             else:
                 value_loss = (returns_batch - value_batch).pow(2).mean()
+            explained_variance = 1 - F.mse_loss(value_batch, returns_batch) / returns_batch.var()
 
             loss = surrogate_loss + PPO_Args.value_loss_coef * value_loss - PPO_Args.entropy_coef * entropy_batch.mean()
 
             # Gradient step
             self.optimizer.zero_grad()
             loss.backward()
-            nn.utils.clip_grad_norm_(self.actor_critic.parameters(), PPO_Args.max_grad_norm)
+            ac_grad_norm = nn.utils.clip_grad_norm_(self.actor_critic.parameters(), PPO_Args.max_grad_norm)
+            mean_ac_grad_norm += ac_grad_norm
             self.optimizer.step()
 
             mean_value_loss += value_loss.item()
             mean_surrogate_loss += surrogate_loss.item()
+            mean_explained_variance += explained_variance.item()
 
             data_size = privileged_obs_batch.shape[0]
             num_train = int(data_size // 5 * 4)
@@ -213,8 +218,10 @@ class PPO:
         mean_adaptation_module_test_loss /= (num_updates * PPO_Args.num_adaptation_module_substeps)
         mean_decoder_test_loss /= (num_updates * PPO_Args.num_adaptation_module_substeps)
         mean_decoder_test_loss_student /= (num_updates * PPO_Args.num_adaptation_module_substeps)
+        mean_explained_variance /= (num_updates * PPO_Args.num_adaptation_module_substeps)
+        mean_ac_grad_norm /= (num_updates * PPO_Args.num_adaptation_module_substeps)
         for label in PPO_Args.adaptation_labels:
             mean_adaptation_losses[label] /= (num_updates * PPO_Args.num_adaptation_module_substeps)
         self.storage.clear()
 
-        return mean_value_loss, mean_surrogate_loss, mean_adaptation_module_loss, mean_decoder_loss, mean_decoder_loss_student, mean_adaptation_module_test_loss, mean_decoder_test_loss, mean_decoder_test_loss_student, mean_adaptation_losses
+        return mean_value_loss, mean_surrogate_loss, mean_adaptation_module_loss, mean_decoder_loss, mean_decoder_loss_student, mean_adaptation_module_test_loss, mean_decoder_test_loss, mean_decoder_test_loss_student, mean_adaptation_losses, mean_explained_variance, mean_ac_grad_norm

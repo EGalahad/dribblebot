@@ -297,6 +297,9 @@ class LeggedRobot(BaseTask):
             self.rew_buf[:] = torch.clip(self.rew_buf[:], min=0.)
         elif self.cfg.rewards.only_positive_rewards_ji22_style: #TODO: update
             self.rew_buf[:] = self.rew_buf_pos[:] * torch.exp(self.rew_buf_neg[:] / self.cfg.rewards.sigma_rew_neg)
+            self.episode_sums_pos += self.rew_buf_pos
+            self.episode_sums_neg += self.rew_buf_neg
+            self.episode_sums_neg_exp += torch.exp(self.rew_buf_neg[:] / self.cfg.rewards.sigma_rew_neg)
         self.episode_sums["total"] += self.rew_buf
         # add termination reward after clipping
         if "termination" in self.reward_scales:
@@ -549,9 +552,7 @@ class LeggedRobot(BaseTask):
         self.default_body_mass = props[0].mass
 
         props[0].mass = self.default_body_mass + self.payloads[env_id]
-        # props[0].com = props[0].com + gymapi.Vec3(self.com_displacements[env_id, 0], self.com_displacements[env_id, 1],
-        #                            self.com_displacements[env_id, 2])
-        props[0].com = gymapi.Vec3(self.com_displacements[env_id, 0], self.com_displacements[env_id, 1],
+        props[0].com = props[0].com + gymapi.Vec3(self.com_displacements[env_id, 0] + 0.05, self.com_displacements[env_id, 1],
                                    self.com_displacements[env_id, 2])
         return props
 
@@ -1334,6 +1335,9 @@ class LeggedRobot(BaseTask):
         self.episode_sums = {
             name: torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False)
             for name in self.reward_scales.keys()}
+        self.episode_sums_pos = torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False)
+        self.episode_sums_neg = torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False)
+        self.episode_sums_neg_exp = torch.zeros(self.num_envs, dtype=torch.float, device=self.device, requires_grad=False)
         self.episode_sums["total"] = torch.zeros(self.num_envs, dtype=torch.float, device=self.device,
                                                  requires_grad=False)
         self.command_sums = {
@@ -1574,11 +1578,10 @@ class LeggedRobot(BaseTask):
             import cv2
             font = cv2.FONT_HERSHEY_SIMPLEX
             cv2.putText(self.video_frame, f'z: {base_pos[2]:.4f}, x: {base_pos[0]:.2f}, y: {base_pos[1]:.2f}', (10, 30), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
-            cv2.putText(self.video_frame, f'distance: {distance:.2f}', (10, 60), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
+            cv2.putText(self.video_frame, f'ball pos: [{ball_pos_xy[0]:.2f}, {ball_pos_xy[1]:.2f}]', (10, 60), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
             cv2.putText(self.video_frame, f'command vel: [{command_vel_xy[0]:.2f}, {command_vel_xy[1]:.2f}]', (10, 90), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
             cv2.putText(self.video_frame, f'ball vel: [{ball_vel_xy[0]:.2f}, {ball_vel_xy[1]:.2f}]', (10, 120), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
-            cv2.putText(self.video_frame, f'ball pos: [{ball_pos_xy[0]:.2f}, {ball_pos_xy[1]:.2f}]', (10, 150), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
-            cv2.putText(self.video_frame, F"hip/head velocity: [{FR_HIP_velocities[0][0]:.2f}, {FR_HIP_velocities[0][1]:.2f}, {FR_HIP_velocities[0][2]:.2f}]", (10, 180), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
+            cv2.putText(self.video_frame, F"hip/head velocity: [{FR_HIP_velocities[0][0]:.2f}, {FR_HIP_velocities[0][1]:.2f}, {FR_HIP_velocities[0][2]:.2f}]", (10, 150), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
             self.video_frames.append(self.video_frame)
 

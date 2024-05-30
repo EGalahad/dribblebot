@@ -8,16 +8,30 @@ class Logger:
     def populate_log(self, env_ids):
 
         extras = {}
-
         # fill extras
         if len(env_ids) > 0:
             extras["train/episode"] = {}
+            
+            # Rewards
+            rewards = {}
             for key in self.env.episode_sums.keys():
-                extras["train/episode"]['rew_' + key] = torch.mean(
-                    self.env.episode_sums[key][env_ids])
-                extras["train/episode"]['rew_rate_' + key] = torch.mean(
-                    self.env.episode_sums[key][env_ids] / self.env.episode_length_buf[env_ids])
+                reward_value = torch.mean(self.env.episode_sums[key][env_ids]).item()
+                rewards[f'reward/{key}'] = reward_value
                 self.env.episode_sums[key][env_ids] = 0.
+            
+            # Reward info
+            reward_info = {}
+            reward_info['reward_info/positive_rewards'] = torch.sum(self.env.episode_sums_pos[env_ids]).item() / len(env_ids)
+            reward_info['reward_info/negative_rewards'] = torch.sum(self.env.episode_sums_neg[env_ids]).item() / len(env_ids)
+            reward_info['reward_info/negative_rewards_exp'] = torch.sum(self.env.episode_sums_neg_exp[env_ids]).item() / len(env_ids)
+
+            self.env.episode_sums_pos[env_ids] = 0.
+            self.env.episode_sums_neg[env_ids] = 0.
+            self.env.episode_sums_neg_exp[env_ids] = 0.
+            
+            
+            extras["train/episode"].update(rewards)
+            extras["train/episode"].update(reward_info)
             extras["train/episode"]["length"] = torch.mean(self.env.episode_length_buf[env_ids].float())
 
         # log additional curriculum info

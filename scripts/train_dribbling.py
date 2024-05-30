@@ -27,17 +27,22 @@ def train_go1(headless=True):
     Cfg.env.num_envs = 3000
     num_learning_iterations = 10000
 
-    Cfg.reward_scales.action_rate = -0.01
-    # Cfg.reward_scales.action_rate = -0.05
-    Cfg.reward_scales.torques = -1e-3
-    # Cfg.reward_scales.torques = -1e-4
+    # Cfg.reward_scales.action_rate = -0.01
+    Cfg.reward_scales.action_rate = -0.05
+    # Cfg.reward_scales.torques = -1e-3
+    Cfg.reward_scales.torques = -1e-4
+
+    Cfg.reward_scales.dribbling_robot_ball_vel = 0.5
+    Cfg.reward_scales.dribbling_robot_ball_yaw = 0.0
 
     # Cfg.reward_scales.dof_pos = -0.5
     Cfg.reward_scales.dof_pos = -0.1
 
+    Cfg.reward_scales.base_height = 0.0
+
     Cfg.reward_scales.orientation = -5
     # Cfg.reward_scales.pitch = -5
-    Cfg.reward_scales.pitch_forward = -5
+    # Cfg.reward_scales.pitch_forward = -5
 
     Cfg.noise.add_noise = True
     Cfg.noise.noise_level = 1
@@ -78,10 +83,10 @@ def train_go1(headless=True):
                         "TimingSensor":{},
                         }
   
-    Cfg.sensors.privileged_sensor_names = {
-                        "BodyVelocitySensor": {},
-                        "ObjectVelocitySensor": {},
-    }
+    Cfg.sensors.privileged_sensor_names = [
+                        "BodyVelocitySensor",
+                        "ObjectVelocitySensor",
+    ]
     Cfg.sensors.privileged_sensor_args = {
                         "BodyVelocitySensor": {},
                         "ObjectVelocitySensor": {},
@@ -130,7 +135,7 @@ def train_go1(headless=True):
     Cfg.domain_rand.Kd_factor_range = [0.8, 1.2]
 
     # external forces
-    Cfg.domain_rand.push_robots = True
+    Cfg.domain_rand.push_robots = False
     Cfg.domain_rand.max_push_vel_xy = 0.3
     
     # randomize the ball properties

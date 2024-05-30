@@ -157,7 +157,7 @@ class Runner:
 
                 self.alg.compute_returns(obs_history[:num_train_envs], privileged_obs[:num_train_envs])
 
-            mean_value_loss, mean_surrogate_loss, mean_adaptation_module_loss, mean_decoder_loss, mean_decoder_loss_student, mean_adaptation_module_test_loss, mean_decoder_test_loss, mean_decoder_test_loss_student, mean_adaptation_losses_dict = self.alg.update()
+            mean_value_loss, mean_surrogate_loss, mean_adaptation_module_loss, mean_decoder_loss, mean_decoder_loss_student, mean_adaptation_module_test_loss, mean_decoder_test_loss, mean_decoder_test_loss_student, mean_adaptation_losses_dict, mean_explained_variance, mean_ac_grad_norm = self.alg.update()
             stop = time.time()
             learn_time = stop - start
 
@@ -172,7 +172,9 @@ class Runner:
                 "mean_decoder_loss_student": mean_decoder_loss_student,
                 "mean_decoder_test_loss": mean_decoder_test_loss,
                 "mean_decoder_test_loss_student": mean_decoder_test_loss_student,
-                "mean_adaptation_module_test_loss": mean_adaptation_module_test_loss
+                "mean_adaptation_module_test_loss": mean_adaptation_module_test_loss,
+                "mean_explained_variance": mean_explained_variance,
+                "mean_ac_grad_norm": mean_ac_grad_norm,
             }, step=it)
 
 
