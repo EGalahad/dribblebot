@@ -299,6 +299,9 @@ class Cfg(PrefixProto, cli=False):
         # randomize joint dynamics
         joint_friction_range = [0.03, 0.08]
         joint_damping_range = [0.02, 0.06]
+
+        # model detetction
+        detection_decimation = 1
         
         
 

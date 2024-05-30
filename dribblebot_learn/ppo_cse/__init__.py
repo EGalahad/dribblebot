@@ -163,6 +163,7 @@ class Runner:
 
             wandb.log({
                 "time_iter": learn_time,
+                "fps": self.num_steps_per_env * num_train_envs / learn_time,
                 # "time_iter": logger.split('epoch'),
                 "adaptation_loss": mean_adaptation_module_loss,
                 "mean_value_loss": mean_value_loss,
